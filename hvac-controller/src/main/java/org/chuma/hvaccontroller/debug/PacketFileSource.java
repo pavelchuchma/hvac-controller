@@ -15,7 +15,7 @@ public class PacketFileSource implements IPacketSource {
     private final Object startSyncObj = new Object();
     private BufferedReader reader;
 
-    public PacketFileSource(String file) throws FileNotFoundException {
+    public PacketFileSource(String file) {
         this.file = file;
     }
 
@@ -46,6 +46,11 @@ public class PacketFileSource implements IPacketSource {
         synchronized (startSyncObj) {
             startSyncObj.notify();
         }
+    }
+
+    @Override
+    public void stopRead() {
+
     }
 
     @Override

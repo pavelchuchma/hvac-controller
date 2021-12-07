@@ -102,19 +102,19 @@ public abstract class AbstractSetPacket extends AbstractPacket {
         return getFanSpeedImpl(val);
     }
 
-    boolean isSleep() {
+    public boolean isSleep() {
         return (packetData.data[0] & MASK_SLEEP) != 0;
     }
 
-    boolean isQuite() {
+    public boolean isQuite() {
         return (packetData.data[6] & MASK_QUITE) != 0;
     }
 
-    boolean isOn() {
+    public boolean isOn() {
         return (packetData.data[4] & MASK_ON) != 0;
     }
 
-    OperatingMode getMode() {
+    public OperatingMode getMode() {
         int val = packetData.data[3] & MASK_MODE;
         return getOperatingModeImpl(val);
     }

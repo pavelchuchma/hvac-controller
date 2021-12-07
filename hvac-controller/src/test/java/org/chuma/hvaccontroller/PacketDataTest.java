@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class PacketDataTest {
     @Test
-    public void testName() throws Exception {
+    public void testPacketData() {
         {
             PacketData p = new PacketData(0x84, 0x20, 0x52, new int[8]);
             int[] expectedData = new int[]{0x32, 0x84, 0x20, 0x52, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF6, 0x34};

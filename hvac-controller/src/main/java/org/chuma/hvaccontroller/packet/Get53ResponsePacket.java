@@ -35,6 +35,6 @@ public class Get53ResponsePacket extends AbstractPacket {
 
     @Override
     public String toString() {
-        return String.format(";;;;sleep:%d;;;mode:%s;", boolAsInt(isSleepMode()), getMode());
+        return String.format("%s:;;;;sleep:%d;;;mode:%s;", super.toString(), boolAsInt(isSleepMode()), getMode());
     }
 }

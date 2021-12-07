@@ -9,5 +9,7 @@ public interface IPacketSource {
 
     void startRead() throws IOException;
 
+    void stopRead();
+
     void sendData(PacketData data);
 }

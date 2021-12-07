@@ -19,9 +19,7 @@ public class Main {
             HvacDevice hvacDevice = new HvacDevice(portName, true, new IPacketProcessor[]{packetPrinter});
 
             String cmd = (args.length > 0) ? args[0] : "test";
-            new Thread(() -> {
-                schedule(hvacDevice, cmd);
-            }).start();
+            new Thread(() -> schedule(hvacDevice, cmd)).start();
 
             hvacDevice.start();
         } catch (Exception e) {
@@ -67,6 +65,4 @@ public class Main {
             e.printStackTrace();
         }
     }
-
-
 }

@@ -28,6 +28,6 @@ public class Get54ResponsePacket extends AbstractPacket {
 
     @Override
     public String toString() {
-        return String.format(";quite:%d", boolAsInt(isQuite()));
+        return String.format("%s:;quite:%d", super.toString(), boolAsInt(isQuite()));
     }
 }
