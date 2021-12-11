@@ -1,6 +1,6 @@
 package org.chuma.hvaccontroller.device;
 
-import org.chuma.hvaccontroller.debug.ByteLogger;
+import org.apache.log4j.Logger;
 import org.chuma.hvaccontroller.packet.PacketData;
 import org.chuma.hvaccontroller.packet.PacketType;
 
@@ -11,16 +11,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 class PacketSender {
     public static final int SEND_RETRY_COUNT = 5;
+    static Logger log = Logger.getLogger(PacketSender.class.getName());
     ConcurrentLinkedQueue<PacketData> sendQueue = new ConcurrentLinkedQueue<>();
     PacketData current;
     boolean packetSent = false;
     private int retryCount;
     private final OutputStream outputStream;
-    private final ByteLogger byteLogger;
 
-    public PacketSender(OutputStream outputStream, ByteLogger byteLogger) {
+    public PacketSender(OutputStream outputStream) {
         this.outputStream = outputStream;
-        this.byteLogger = byteLogger;
     }
 
     void send(PacketData packet) {
@@ -70,8 +69,8 @@ class PacketSender {
             for (int c : p.rawData) {
                 outputStream.write(new byte[]{(byte) c});
                 outputStream.flush();
-                if (byteLogger != null) {
-                    byteLogger.byteSent(c);
+                if (log.isTraceEnabled()) {
+                    log.trace(String.format("out: %02X\n", c));
                 }
                 Thread.sleep(5);
             }

@@ -1,5 +1,11 @@
 package org.chuma.hvaccontroller.device;
 
+import gnu.io.CommPortIdentifier;
+import gnu.io.SerialPort;
+import org.apache.log4j.Logger;
+import org.chuma.hvaccontroller.IPacketSource;
+import org.chuma.hvaccontroller.packet.PacketData;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -7,33 +13,21 @@ import java.util.Enumeration;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.chuma.hvaccontroller.IPacketSource;
-import org.chuma.hvaccontroller.debug.ByteLogger;
-import org.chuma.hvaccontroller.packet.PacketData;
-import gnu.io.CommPortIdentifier;
-import gnu.io.SerialPort;
-import org.apache.log4j.Logger;
-
 public class HvacConnector implements IPacketSource {
     static Logger log = Logger.getLogger(HvacConnector.class.getName());
     private final String portName;
-    private final boolean logBytes;
     BlockingQueue<PacketData> packetDataQueue = new LinkedBlockingQueue<>();
     boolean stopped = false;
-    ByteLogger byteLogger;
     PacketReader packetReader;
     PacketSender packetSender;
 
-    public HvacConnector(String portName, boolean logBytes) {
+    public HvacConnector(String portName) {
         this.portName = portName;
-        this.logBytes = logBytes;
     }
 
     private SerialPort openSerialPort() throws IOException {
         //noinspection rawtypes
         Enumeration portList = CommPortIdentifier.getPortIdentifiers();
-        SerialPort serialPort;
-        int baudRate = 2400;
 
         while (portList.hasMoreElements()) {
             CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
@@ -44,19 +38,17 @@ public class HvacConnector implements IPacketSource {
                     log.info("Port found: " + portId.getName());
 
                     try {
-                        serialPort = (SerialPort) portId.open("SimpleReadApp", 2000);
+                        SerialPort serialPort = (SerialPort) portId.open("SimpleReadApp", 2000);
                         serialPort.notifyOnDataAvailable(false);
-                        serialPort.setSerialPortParams(baudRate,
+                        serialPort.setSerialPortParams(2400,
                                 SerialPort.DATABITS_8,
                                 SerialPort.STOPBITS_1,
                                 SerialPort.PARITY_EVEN);
                         serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
                         serialPort.setOutputBufferSize(0);
                         serialPort.setInputBufferSize(0);
-                        serialPort.enableReceiveTimeout(600000);
-
+                        serialPort.enableReceiveTimeout(600_000);
                         return serialPort;
-
                     } catch (Exception e) {
                         throw new IOException("Failed to open serial port '" + portName + "'", e);
                     }
@@ -75,12 +67,9 @@ public class HvacConnector implements IPacketSource {
         startRead(serialPort.getInputStream(), serialPort.getOutputStream());
     }
 
-    public void startRead(InputStream inputStream, OutputStream outputStream) throws IOException {
-        this.packetReader = new PacketReader(inputStream, byteLogger);
-        this.packetSender = new PacketSender(outputStream, byteLogger);
-        if (logBytes) {
-            byteLogger = new ByteLogger();
-        }
+    public void startRead(InputStream inputStream, OutputStream outputStream) {
+        this.packetReader = new PacketReader(inputStream);
+        this.packetSender = new PacketSender(outputStream);
 
         Thread thread = new Thread(() -> {
             while (!stopped) {
@@ -88,10 +77,6 @@ public class HvacConnector implements IPacketSource {
                     PacketData receivedPacket = packetReader.readNext();
                     packetSender.notifyPacketReceived(receivedPacket);
                     packetDataQueue.add(receivedPacket);
-
-                    if (byteLogger != null) {
-                        byteLogger.flush();
-                    }
                 } catch (IOException e) {
                     log.error("Read failure", e);
                 }

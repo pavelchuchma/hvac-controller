@@ -17,6 +17,9 @@ public class PacketFactory {
         if (data.command == PacketType.CMD_GET_54 && !data.isRequest()) {
             return new Get54ResponsePacket(data);
         }
+        if (data.command == PacketType.CMD_GET_64 && !data.isRequest()) {
+            return new Get64ResponsePacket(data);
+        }
         return new UnknownPacket(data);
     }
 }

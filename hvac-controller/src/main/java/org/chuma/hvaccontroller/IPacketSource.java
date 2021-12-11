@@ -1,8 +1,8 @@
 package org.chuma.hvaccontroller;
 
-import java.io.IOException;
-
 import org.chuma.hvaccontroller.packet.PacketData;
+
+import java.io.IOException;
 
 public interface IPacketSource {
     PacketData getPacket();

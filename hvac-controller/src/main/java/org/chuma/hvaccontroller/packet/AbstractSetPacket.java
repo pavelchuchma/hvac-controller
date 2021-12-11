@@ -124,7 +124,7 @@ public abstract class AbstractSetPacket extends AbstractPacket {
     }
 
     @Override
-    public String toString() {
+    public String valuesToString() {
         return String.format("sleep:%d;;temp:%d fan:%s;mode:%s;on:%d;;quite:%d;", boolAsInt(isSleep()), getTargetTemperature(), getFanSpeed(), getMode(), boolAsInt(isOn()), boolAsInt(isQuite()));
     }
 

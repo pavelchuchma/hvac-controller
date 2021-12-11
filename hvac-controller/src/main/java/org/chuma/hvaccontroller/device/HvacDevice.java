@@ -1,28 +1,30 @@
 package org.chuma.hvaccontroller.device;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-
+import org.apache.log4j.Logger;
 import org.chuma.hvaccontroller.IPacketProcessor;
 import org.chuma.hvaccontroller.IPacketSource;
 import org.chuma.hvaccontroller.packet.Get52ResponsePacket;
 import org.chuma.hvaccontroller.packet.Get53ResponsePacket;
 import org.chuma.hvaccontroller.packet.Get54ResponsePacket;
+import org.chuma.hvaccontroller.packet.Get64ResponsePacket;
 import org.chuma.hvaccontroller.packet.Packet;
 import org.chuma.hvaccontroller.packet.PacketData;
 import org.chuma.hvaccontroller.packet.PacketFactory;
 import org.chuma.hvaccontroller.packet.SetPacketRequest;
-import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class HvacDevice {
 
-    public static final int ADDR_THIS_CONTROLLER = 0x85;
-    public static final int ADDR_HVAC_DEVICE = 0x20;
     static Logger log = Logger.getLogger(HvacDevice.class.getName());
     private final Collection<IPacketProcessor> processors;
-    private IPacketSource connector;
+    private final IPacketSource connector;
+    private final int thisControllerAddress;
+    private final int targetHvacDeviceAddress;
+
     // HVAC state
     private boolean running;
     private FanSpeed fanSpeed;
@@ -32,18 +34,29 @@ public class HvacDevice {
     private boolean quiteMode;
     private boolean sleepMode;
     private int targetTemperature;
+    private int roomTemperature;
     private int airTemperature;
-    private boolean x;
-    private boolean y;
+    private int air2Temperature;
+    private boolean defrost;
+    private double unitTemperature;
 
-    public HvacDevice(String portName, boolean logBytes, IPacketProcessor additionalProcessors[]) {
-        this(new HvacConnector(portName, logBytes), additionalProcessors);
+    /**
+     * @param portName                   Name of serial port. For example "COM5" or "/dev/ttyUSB0"
+     * @param thisControllerAddress      Address of this controller. Usually the main controller has address 0x84 and 0x85
+     *                                   or higher is suitable for this.
+     * @param targetHvacDeviceAddress    Address of controlled hvac device. Usually the primary hvac device on the bus has address 0x20.
+     * @param additionalPacketProcessors Allows adding of custom processors to process all received packets.
+     */
+    public HvacDevice(String portName, int thisControllerAddress, int targetHvacDeviceAddress, IPacketProcessor[] additionalPacketProcessors) {
+        this(new HvacConnector(portName), thisControllerAddress, targetHvacDeviceAddress, additionalPacketProcessors);
     }
 
-    public HvacDevice(IPacketSource packetSource, IPacketProcessor additionalProcessors[]) {
+    public HvacDevice(IPacketSource packetSource, int thisControllerAddress, int targetHvacDeviceAddress, IPacketProcessor[] additionalProcessors) {
         connector = packetSource;
+        this.thisControllerAddress = thisControllerAddress;
+        this.targetHvacDeviceAddress = targetHvacDeviceAddress;
         this.processors = new ArrayList<>();
-        processors.add(getProcessor());
+        processors.add(getStateUpdateProcessor());
         if (additionalProcessors != null) {
             Collections.addAll(processors, additionalProcessors);
         }
@@ -87,20 +100,20 @@ public class HvacDevice {
         connector.startRead();
     }
 
-    public IPacketProcessor getProcessor() {
+    private IPacketProcessor getStateUpdateProcessor() {
         return new IPacketProcessor() {
             @Override
-            public void start() throws IOException {
+            public void start() {
                 log.info("Starting HvacDevice");
             }
 
             @Override
-            public void stop() throws IOException {
+            public void stop() {
 
             }
 
             @Override
-            public void process(Packet packet) throws IOException {
+            public void process(Packet packet) {
                 if (packet instanceof Get52ResponsePacket) {
                     Get52ResponsePacket get52Resp = (Get52ResponsePacket) packet;
                     running = get52Resp.isOn();
@@ -108,9 +121,10 @@ public class HvacDevice {
                     currentMode = get52Resp.getMode();
                     autoMode = get52Resp.isModeAuto();
                     targetTemperature = get52Resp.getTargetTemperature();
+                    roomTemperature = get52Resp.getRoomTemperature();
                     airTemperature = get52Resp.getAirTemperature();
-                    x = get52Resp.isX();
-                    y = get52Resp.isY();
+                    air2Temperature = get52Resp.getAir2Temperature();
+                    defrost = get52Resp.isDefrost();
                 } else if (packet instanceof Get53ResponsePacket) {
                     Get53ResponsePacket get53Resp = (Get53ResponsePacket) packet;
                     targetMode = get53Resp.getMode();
@@ -118,11 +132,14 @@ public class HvacDevice {
                 } else if (packet instanceof Get54ResponsePacket) {
                     Get54ResponsePacket get54Resp = (Get54ResponsePacket) packet;
                     quiteMode = get54Resp.isQuite();
+                } else if (packet instanceof Get64ResponsePacket) {
+                    Get64ResponsePacket get64Resp = (Get64ResponsePacket) packet;
+                    unitTemperature = get64Resp.getUnitTemperature();
                 }
 
                 if (log.isDebugEnabled()) {
                     if (packet.getCommand() == 0xD1) {
-                        log.debug("State: " + HvacDevice.this.toString());
+                        log.debug("State: " + HvacDevice.this);
                     }
                 }
             }
@@ -131,8 +148,8 @@ public class HvacDevice {
 
     public void set(Boolean on, OperatingMode mode, FanSpeed fanSpeed, int temp, Boolean sleep, Boolean quite) {
         SetPacketRequest setPacketRequest = new SetPacketRequest(
-                ADDR_THIS_CONTROLLER,
-                ADDR_HVAC_DEVICE,
+                thisControllerAddress,
+                targetHvacDeviceAddress,
                 selectBoolean(on, running),
                 (mode != OperatingMode.NONE) ? mode : currentMode,
                 (fanSpeed != FanSpeed.NONE) ? fanSpeed : this.fanSpeed,
@@ -179,16 +196,24 @@ public class HvacDevice {
         return targetTemperature;
     }
 
+    public int getRoomTemperature() {
+        return roomTemperature;
+    }
+
     public int getAirTemperature() {
         return airTemperature;
     }
 
-    public boolean isX() {
-        return x;
+    public int getAir2Temperature() {
+        return air2Temperature;
     }
 
-    public boolean isY() {
-        return y;
+    public boolean isDefrost() {
+        return defrost;
+    }
+
+    public double getUnitTemperature() {
+        return unitTemperature;
     }
 
     private int boolAsInt(boolean b) {
@@ -197,7 +222,9 @@ public class HvacDevice {
 
     @Override
     public String toString() {
-        return String.format("on:%d mode:%s(%s) fan:%s tgtTemp:%d airTemp:%d auto:%d sleep:%d quite:%d x:%d y:%d",
-                boolAsInt(running), targetMode, currentMode, fanSpeed, targetTemperature, airTemperature, boolAsInt(autoMode), boolAsInt(sleepMode), boolAsInt(quiteMode), boolAsInt(x), boolAsInt(y));
+        return String.format("on:%d mode:%s(%s) fan:%s tgtTemp:%d roomTemp:%d airTemp:%d air2Temp:%d auto:%d sleep:%d quite:%d defrost:%d unitTemp:%.2f",
+                boolAsInt(running), targetMode, currentMode, fanSpeed, targetTemperature, roomTemperature,
+                airTemperature, air2Temperature, boolAsInt(autoMode), boolAsInt(sleepMode), boolAsInt(quiteMode),
+                boolAsInt(defrost), unitTemperature);
     }
 }

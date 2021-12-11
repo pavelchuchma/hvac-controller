@@ -6,3 +6,5 @@
 build
 /hvac-controller/out/
 *.log
+*.tmp
+/hvac-controller/ttyUSB0.html

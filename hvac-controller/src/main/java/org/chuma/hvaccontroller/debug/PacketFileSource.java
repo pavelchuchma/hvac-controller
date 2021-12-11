@@ -1,14 +1,11 @@
 package org.chuma.hvaccontroller.debug;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
 import org.chuma.hvaccontroller.IPacketSource;
 import org.chuma.hvaccontroller.packet.PacketData;
 
-import java.lang.UnsupportedOperationException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class PacketFileSource implements IPacketSource {
     private final String file;

@@ -1,8 +1,8 @@
 package org.chuma.hvaccontroller;
 
-import java.io.IOException;
-
 import org.chuma.hvaccontroller.packet.Packet;
+
+import java.io.IOException;
 
 public interface IPacketProcessor {
     void start() throws IOException;

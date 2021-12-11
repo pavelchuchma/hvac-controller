@@ -1,19 +1,19 @@
 package org.chuma.hvaccontroller.packet;
 
-import java.io.File;
-
 import org.chuma.hvaccontroller.IPacketSource;
 import org.chuma.hvaccontroller.debug.PacketFileSource;
 import org.chuma.hvaccontroller.device.FanSpeed;
 import org.chuma.hvaccontroller.device.OperatingMode;
 import org.junit.Test;
 
+import java.io.File;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 public class SetPacketRequestTest {
     @Test
-    public void testCreate01() throws Exception {
+    public void testCreate01() {
         SetPacketRequest packet;
         int[] expData;
         //SetPacketRequest: sleep:0 temp:24 fan:AUTO mode:AUTO on:1 quite:0
@@ -69,7 +69,7 @@ public class SetPacketRequestTest {
         PacketData pd;
         while ((pd = packetSource.getPacket()) != null) {
             SetPacketRequest fp = (SetPacketRequest) PacketFactory.Deserialize(pd);
-            System.out.println(fp.toString());
+            System.out.println(fp);
             SetPacketRequest cp = new SetPacketRequest(fp.getFrom(), fp.getTo(), fp.isOn(), fp.getMode(), fp.getFanSpeed(), fp.getTargetTemperature(), fp.isSleep(), fp.isQuite());
 
             assertEquals(fp.getFrom(), cp.getFrom());

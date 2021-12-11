@@ -39,6 +39,6 @@ public abstract class AbstractPacket implements Packet {
 
     @Override
     public String toString() {
-        return String.format("0x%02X->0x%02X", getFrom(), getTo());
+        return String.format("0x%02X->0x%02X %s", getFrom(), getTo(), valuesToString());
     }
 }

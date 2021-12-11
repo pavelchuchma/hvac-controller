@@ -15,25 +15,31 @@ import java.io.OutputStream;
 
 public class PacketDataPrinterTest {
     static class FileHvacConnector extends HvacConnector {
+        InputStream inputStream;
+
         public FileHvacConnector() {
-            super(null, false);
+            super(null);
         }
 
         @Override
         public void startRead() throws IOException {
-            InputStream inputStream = PacketReaderTest.getSlowTestResourceStream();
+            inputStream = PacketReaderTest.getSlowTestResourceStream();
             OutputStream outputStream = new FileOutputStream("ttyUSB0.out.tmp");
             startRead(inputStream, outputStream);
         }
     }
 
-    // @Test
+    @Test
     public void testFormatFile() throws Exception {
-        HvacConnector hvacConnector = new FileHvacConnector();
+        FileHvacConnector hvacConnector = new FileHvacConnector();
         IPacketProcessor printer = new PacketPrinter(new HtmlOutputWriter(new FileWriter("ttyUSB0.html")), true);
-        HvacDevice hvacDevice = new HvacDevice(hvacConnector, new IPacketProcessor[]{printer});
+        HvacDevice hvacDevice = new HvacDevice(hvacConnector, 0x85, 0x20, new IPacketProcessor[]{printer});
         hvacDevice.start();
 
-        Thread.sleep(10000);
+        // ugly wait for source file to be read
+        while (hvacConnector.inputStream.available() > 0) {
+            //noinspection BusyWait
+            Thread.sleep(10);
+        }
     }
 }

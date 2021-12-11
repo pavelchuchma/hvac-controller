@@ -1,7 +1,6 @@
 package org.chuma.hvaccontroller.device;
 
 import org.apache.log4j.Logger;
-import org.chuma.hvaccontroller.debug.ByteLogger;
 import org.chuma.hvaccontroller.packet.PacketData;
 
 import java.io.IOException;
@@ -21,16 +20,13 @@ class PacketReader {
     }
 
     private final InputStream inputStream;
-    private final ByteLogger byteLogger;
-
     private boolean stopped = false;
     private ReceivedChar c;
     int[] buff = new int[PacketData.PACKET_LENGTH];
     static Logger log = Logger.getLogger(PacketReader.class.getName());
 
-    public PacketReader(InputStream inputStream, ByteLogger byteLogger) {
+    public PacketReader(InputStream inputStream) {
         this.inputStream = inputStream;
-        this.byteLogger = byteLogger;
     }
 
     public PacketData readNext() throws IOException {
@@ -77,8 +73,8 @@ class PacketReader {
             throw new IOException("End of stream reached");
         }
         int readTime = (int) (System.currentTimeMillis() - startTime);
-        if (byteLogger != null) {
-            byteLogger.logByte(readTime, b);
+        if (log.isTraceEnabled()) {
+            log.trace(String.format("%d %02X\n", readTime, b));
         }
         return new ReceivedChar(b, readTime);
     }

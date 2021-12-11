@@ -20,7 +20,11 @@ Supported operations:
   * Target temperature
   * Set sleep and quite modes
 * Get
-  * All above plus output air temperature and defrost flag
+  * All above plus:
+    * 2 output air temperatures
+    * room/input air temperature (probably)
+    * defrost flag
+    * ?unit temperature?
 
 ## Prerequisites
 * USB to RS485 adapter

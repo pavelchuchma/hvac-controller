@@ -11,7 +11,7 @@ public class UnknownPacket extends AbstractPacket {
     }
 
     @Override
-    public String toString() {
-        return String.format("%s: cmd: 0x%02X", super.toString(), packetData.command);
+    public String valuesToString() {
+        return "";
     }
 }

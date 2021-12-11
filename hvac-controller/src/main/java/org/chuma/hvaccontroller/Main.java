@@ -16,7 +16,7 @@ public class Main {
             IPacketProcessor packetPrinter = new PacketPrinter(new ConsoleOutputWriter(), false);
             String portName = isWindows() ? "COM5" : "/dev/ttyUSB0";
 
-            HvacDevice hvacDevice = new HvacDevice(portName, true, new IPacketProcessor[]{packetPrinter});
+            HvacDevice hvacDevice = new HvacDevice(portName, 0x85, 0x20, new IPacketProcessor[]{packetPrinter});
 
             String cmd = (args.length > 0) ? args[0] : "test";
             new Thread(() -> schedule(hvacDevice, cmd)).start();

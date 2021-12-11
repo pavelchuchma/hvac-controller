@@ -1,17 +1,16 @@
 package org.chuma.hvaccontroller.debug;
 
+import org.chuma.hvaccontroller.IPacketProcessor;
+import org.chuma.hvaccontroller.packet.AbstractSetPacket;
+import org.chuma.hvaccontroller.packet.Packet;
+import org.chuma.hvaccontroller.packet.PacketData;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.chuma.hvaccontroller.IPacketProcessor;
-import org.chuma.hvaccontroller.packet.AbstractSetPacket;
-import org.chuma.hvaccontroller.packet.Packet;
-import org.chuma.hvaccontroller.packet.PacketData;
-import org.chuma.hvaccontroller.packet.UnknownPacket;
 
 public class PacketPrinter implements IPacketProcessor {
     IOutputWriter outputWriter;
@@ -91,24 +90,20 @@ public class PacketPrinter implements IPacketProcessor {
         }
         outputWriter.append("\n");
 
-        if (!(currentRequest instanceof UnknownPacket) || !(currentResponse instanceof UnknownPacket)) {
-            printPacketInfo(currentRequest);
-            if (currentResponse != null) {
-                outputWriter.append("       ");
-                printPacketInfo(currentResponse);
-            }
-            outputWriter.append("\n");
+        printPacketInfo(currentRequest);
+        if (currentResponse != null) {
+            printPacketInfo(currentResponse);
         }
+        outputWriter.append("\n");
     }
 
     private void printPacketInfo(Packet packet) throws IOException {
-        int len = 0;
-        if (!(packet instanceof UnknownPacket)) {
-            String name = packet.getClass().getSimpleName();
-            outputWriter.append(name + ": ");
-            len = name.length() + 2;
-        }
-        String[] split = packet.toString().split(";");
+        String name = packet.getClass().getSimpleName();
+        final String header = String.format("%s[0x%02X->0x%02X] ", name, packet.getFrom(), packet.getTo());
+        outputWriter.append(header);
+        int len = header.length();
+
+        String[] split = packet.valuesToString().split(";");
         for (int i = 0; i < split.length; i++) {
             if (!split[i].isEmpty()) {
                 outputWriter.appendColorized(split[i], i);
@@ -117,7 +112,7 @@ public class PacketPrinter implements IPacketProcessor {
             }
         }
 
-        for (int i = len; i < 74; i++) {
+        for (int i = len; i < 81; i++) {
             outputWriter.append(" ");
         }
     }
@@ -160,16 +155,7 @@ public class PacketPrinter implements IPacketProcessor {
     }
 
     private void writeCommand(Packet packet) throws IOException {
-        String backgroundColor;
-        if (packet instanceof AbstractSetPacket) {
-            backgroundColor = "orange";
-        } else {
-            backgroundColor = "lightblue";
-        }
+        String backgroundColor = (packet instanceof AbstractSetPacket) ? "orange" : "lightblue";
         outputWriter.appendColorized(String.format("%02X", packet.getCommand()), "black", backgroundColor);
     }
-
-//    void printReadTime(int readTime) throws IOException {
-//        w.append(String.format("<i>%4d</i>", readTime));
-//    }
 }
