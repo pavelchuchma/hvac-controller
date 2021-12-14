@@ -4,7 +4,7 @@ import org.chuma.hvaccontroller.device.FanSpeed;
 import org.chuma.hvaccontroller.device.OperatingMode;
 
 public class Get52ResponsePacket extends AbstractPacket {
-    public static final int MASK_TEMPERATURE = 0x1F;
+    public static final int MASK_TEMPERATURE = 0x3F;
     public static final int MASK_FAN_SPEED = 0x07;
     public static final int MASK_ON = 0x80;
     public static final int MASK_MODE_AUTO = 0x20;
