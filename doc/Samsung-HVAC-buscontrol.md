@@ -71,9 +71,12 @@ This command is an information request. The bytes in the command are all zeroes,
 
 | Data byte | Settings |
 | :---: | :--- |
-| 1 | bit 4-0 : set temperature - 9 |
-| 2 | bit 4-0 : room temperature - 9 |
-| 3 | temperature ? |
+| 1 | bit 5-0 : set temperature - 9 |
+|   | bit 6   : always set to '1' ? |
+| 2 | bit 5-0 : room temperature - 9 |
+|   | bit 6   : always set to '1' ? |
+| 3 | bit 5-0 : output air temperature - 9 |
+|   | bit 6   : always set to '1' ? |
 | 4 | <p>bit 2-0 : fan speed<br>0 = auto<br>2 = low<br>4 = medium<br>5 = high</p> |
 |   | <p>bit 7-3 : blade swing<br>1A = swing up/down<br>1F = blade swing off</p> |
 | 5 | <p>bit 3-0 : 1 = wired control<br>2 = remote control</p> |
@@ -81,7 +84,8 @@ This command is an information request. The bytes in the command are all zeroes,
 |   | <p>bit 7 : 0 = power is off<br>1 = power in on</p> |
 | 6 | bit 4 : 1 = filter needs cleaning |
 | 7 | 0 |
-| 8 | temperature ? |
+| 8 | bit 5-0 : another temperature - 9 |
+|   | bit 6   : always set to '1' ? |
 
 ### Command 53
 
@@ -131,7 +135,7 @@ This command is the temperature information command to the unit, the reply to th
 | 7 | 0 |
 | 8 | 0 |
 
-The temperature in degrees is calculated as follows: 
+The temperature in degrees is calculated as follows:
 ```
 (<high byte> * 256 + <low byte> - 553) / 10
 ```
@@ -150,6 +154,6 @@ Pyserial is a required package.
 
 Call the scripts with the -h option to obtain info on how to use it.
 serial_dump.py dumps all serial communication on screen, there is no transmission of commands.
-lib_serial.py is used by ac_control.py 
+lib_serial.py is used by ac_control.py
 
 In my setup, I use the wired remote control in combination with the Raspberry Pi which acts also as a master. This makes the communication a bit tricky. The wired remote control sends commands to all units in sequence and ends the communication with a command to destination address 0xAD, no reply is coming from any of the units on this one. I suspect the 0xAD address to be a broadcast address. Then there is a 300 ms gap in the communication and then it all starts over with other commands. During this gap the tools make use of the bus to send their own commands. The wired remote will not notice the presence of the other master but it will take over the changed settings of the untis when it polls their status.
