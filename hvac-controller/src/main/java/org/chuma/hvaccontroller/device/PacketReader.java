@@ -1,7 +1,8 @@
 package org.chuma.hvaccontroller.device;
 
-import org.apache.log4j.Logger;
 import org.chuma.hvaccontroller.packet.PacketData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +24,7 @@ class PacketReader {
     private boolean stopped = false;
     private ReceivedChar c;
     int[] buff = new int[PacketData.PACKET_LENGTH];
-    static Logger log = Logger.getLogger(PacketReader.class.getName());
+    static Logger log = LoggerFactory.getLogger(PacketReader.class.getName());
 
     public PacketReader(InputStream inputStream) {
         this.inputStream = inputStream;

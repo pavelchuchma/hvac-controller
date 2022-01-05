@@ -1,6 +1,5 @@
 package org.chuma.hvaccontroller.device;
 
-import org.apache.log4j.Logger;
 import org.chuma.hvaccontroller.IPacketProcessor;
 import org.chuma.hvaccontroller.IPacketSource;
 import org.chuma.hvaccontroller.packet.Get52ResponsePacket;
@@ -11,6 +10,8 @@ import org.chuma.hvaccontroller.packet.Packet;
 import org.chuma.hvaccontroller.packet.PacketData;
 import org.chuma.hvaccontroller.packet.PacketFactory;
 import org.chuma.hvaccontroller.packet.SetPacketRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.Collections;
 
 public class HvacDevice {
 
-    static Logger log = Logger.getLogger(HvacDevice.class.getName());
+    static Logger log = LoggerFactory.getLogger(HvacDevice.class.getName());
     private final Collection<IPacketProcessor> processors;
     private final IPacketSource connector;
     private final int thisControllerAddress;

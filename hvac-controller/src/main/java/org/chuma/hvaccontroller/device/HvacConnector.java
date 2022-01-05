@@ -2,9 +2,10 @@ package org.chuma.hvaccontroller.device;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
-import org.apache.log4j.Logger;
 import org.chuma.hvaccontroller.IPacketSource;
 import org.chuma.hvaccontroller.packet.PacketData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +15,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class HvacConnector implements IPacketSource {
-    static Logger log = Logger.getLogger(HvacConnector.class.getName());
+    static Logger log = LoggerFactory.getLogger(HvacConnector.class.getName());
     private final String portName;
     BlockingQueue<PacketData> packetDataQueue = new LinkedBlockingQueue<>();
     boolean stopped = false;

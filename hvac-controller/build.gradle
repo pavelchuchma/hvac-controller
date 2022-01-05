@@ -16,6 +16,9 @@ repositories {
     // Use Maven Central for resolving dependencies.
     mavenLocal()
     mavenCentral()
+    maven {
+        url 'https://repo.opennms.org/maven2'
+    }
 }
 
 publishing {
@@ -33,10 +36,7 @@ java {
 }
 
 dependencies {
-    // Use JUnit test framework.
     testImplementation 'junit:junit:4.13.2'
-
-    implementation 'org.rxtx:rxtx:2.1.7'
-    implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
-    implementation 'org.apache.logging.log4j:log4j-1.2-api:2.14.1'
+    implementation 'org.rxtx:rxtx:2.2pre2'
+    implementation "ch.qos.logback:logback-classic:1.2.10"
 }

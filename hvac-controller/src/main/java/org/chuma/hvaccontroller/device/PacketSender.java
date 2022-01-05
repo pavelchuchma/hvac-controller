@@ -1,8 +1,9 @@
 package org.chuma.hvaccontroller.device;
 
-import org.apache.log4j.Logger;
 import org.chuma.hvaccontroller.packet.PacketData;
 import org.chuma.hvaccontroller.packet.PacketType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 class PacketSender {
     public static final int SEND_RETRY_COUNT = 5;
-    static Logger log = Logger.getLogger(PacketSender.class.getName());
+    static Logger log = LoggerFactory.getLogger(PacketSender.class.getName());
     ConcurrentLinkedQueue<PacketData> sendQueue = new ConcurrentLinkedQueue<>();
     PacketData current;
     boolean packetSent = false;
