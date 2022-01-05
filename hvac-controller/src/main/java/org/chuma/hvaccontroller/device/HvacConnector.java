@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -26,37 +28,41 @@ public class HvacConnector implements IPacketSource {
         this.portName = portName;
     }
 
-    private SerialPort openSerialPort() throws IOException {
+    private static CommPortIdentifier getSelectedPortId(String portName) throws IOException {
+        List<String> existingPortNames = new ArrayList<>();
         //noinspection rawtypes
         Enumeration portList = CommPortIdentifier.getPortIdentifiers();
-
         while (portList.hasMoreElements()) {
             CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
-            log.debug("Checking: " + portId.getName());
-
             if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
                 if (portId.getName().equals(portName)) {
-                    log.info("Port found: " + portId.getName());
-
-                    try {
-                        SerialPort serialPort = (SerialPort) portId.open("SimpleReadApp", 2000);
-                        serialPort.notifyOnDataAvailable(false);
-                        serialPort.setSerialPortParams(2400,
-                                SerialPort.DATABITS_8,
-                                SerialPort.STOPBITS_1,
-                                SerialPort.PARITY_EVEN);
-                        serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-                        serialPort.setOutputBufferSize(0);
-                        serialPort.setInputBufferSize(0);
-                        serialPort.enableReceiveTimeout(600_000);
-                        return serialPort;
-                    } catch (Exception e) {
-                        throw new IOException("Failed to open serial port '" + portName + "'", e);
-                    }
+                    log.debug("Port found: " + portId.getName());
+                    return portId;
                 }
+                existingPortNames.add(portId.getName());
             }
         }
-        throw new IOException("Serial port '" + portName + "' not found");
+
+        throw new IOException("Serial port '" + portName + "' not found. Available serial ports are: " + String.join(", ", existingPortNames));
+    }
+
+    private SerialPort openSerialPort() throws IOException {
+        CommPortIdentifier portId = getSelectedPortId(portName);
+        try {
+            SerialPort serialPort = (SerialPort) portId.open("SimpleReadApp", 2000);
+            serialPort.notifyOnDataAvailable(false);
+            serialPort.setSerialPortParams(2400,
+                    SerialPort.DATABITS_8,
+                    SerialPort.STOPBITS_1,
+                    SerialPort.PARITY_EVEN);
+            serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+            serialPort.setOutputBufferSize(0);
+            serialPort.setInputBufferSize(0);
+            serialPort.enableReceiveTimeout(600_000);
+            return serialPort;
+        } catch (Exception e) {
+            throw new IOException("Failed to open serial port '" + portName + "'", e);
+        }
     }
 
     public void sendData(PacketData p) {
