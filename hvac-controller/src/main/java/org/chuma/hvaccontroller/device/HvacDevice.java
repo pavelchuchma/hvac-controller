@@ -28,9 +28,9 @@ public class HvacDevice {
 
     // HVAC state
     private boolean running;
-    private FanSpeed fanSpeed;
-    private OperatingMode currentMode;
-    private OperatingMode targetMode;
+    private FanSpeed fanSpeed = FanSpeed.NONE;
+    private OperatingMode currentMode = OperatingMode.NONE;
+    private OperatingMode targetMode = OperatingMode.NONE;
     private boolean autoMode;
     private boolean quiteMode;
     private boolean sleepMode;
