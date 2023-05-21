@@ -17,17 +17,12 @@ class PacketSender {
     PacketData current;
     boolean packetSent = false;
     private int retryCount;
-    private final OutputStream outputStream;
-
-    public PacketSender(OutputStream outputStream) {
-        this.outputStream = outputStream;
-    }
 
     void send(PacketData packet) {
         sendQueue.add(packet);
     }
 
-    void notifyPacketReceived(PacketData receivedPacket) {
+    void notifyPacketReceived(OutputStream outputStream, PacketData receivedPacket) {
         if (packetSent) {
             if (receivedPacket.command == PacketType.CMD_SET_RESPONSE
                     && receivedPacket.from == current.to && receivedPacket.to == current.from
@@ -55,7 +50,7 @@ class PacketSender {
 
             if (current != null) {
                 try {
-                    sendDataImpl(current);
+                    sendDataImpl(outputStream, current);
                     packetSent = true;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -64,7 +59,7 @@ class PacketSender {
         }
     }
 
-    void sendDataImpl(PacketData p) throws IOException {
+    void sendDataImpl(OutputStream outputStream, PacketData p) throws IOException {
         try {
             Thread.sleep(20);
             for (int c : p.rawData) {

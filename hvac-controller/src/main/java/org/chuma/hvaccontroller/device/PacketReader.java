@@ -20,22 +20,17 @@ class PacketReader {
         }
     }
 
-    private final InputStream inputStream;
     private boolean stopped = false;
     private ReceivedChar c;
     int[] buff = new int[PacketData.PACKET_LENGTH];
     static Logger log = LoggerFactory.getLogger(PacketReader.class.getName());
 
-    public PacketReader(InputStream inputStream) {
-        this.inputStream = inputStream;
-    }
-
-    public PacketData readNext() throws IOException {
-        c = waitForStartChar(c);
+    public PacketData readNext(InputStream inputStream) throws IOException {
+        c = waitForStartChar(inputStream, c);
         int initialReadTime = c.readTime;
         for (int i = 0; i < PacketData.PACKET_LENGTH - 1 && !stopped; i++) {
             buff[i] = c.character;
-            c = readChar();
+            c = readChar(inputStream);
         }
         buff[PacketData.PACKET_LENGTH - 1] = c.character;
 
@@ -50,9 +45,9 @@ class PacketReader {
         stopped = true;
     }
 
-    private ReceivedChar waitForStartChar(ReceivedChar c) throws IOException {
+    private ReceivedChar waitForStartChar(InputStream inputStream, ReceivedChar c) throws IOException {
         if (c == null || c.character == PacketData.STOP_BYTE) {
-            c = readChar();
+            c = readChar(inputStream);
             if (c.character == PacketData.START_BYTE) {
                 return c;
             }
@@ -62,12 +57,12 @@ class PacketReader {
             if (log.isDebugEnabled()) {
                 log.debug(String.format("Ignoring initial char %02X with read time: %d%n", c.character, c.readTime));
             }
-            c = readChar();
+            c = readChar(inputStream);
         }
         return c;
     }
 
-    private ReceivedChar readChar() throws IOException {
+    private ReceivedChar readChar(InputStream inputStream) throws IOException {
         long startTime = System.currentTimeMillis();
         int b = inputStream.read();
         if (b < 0) {

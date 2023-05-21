@@ -35,7 +35,3 @@ Supported operations:
   * Tested with [this one](https://www.czc.cz/premiumcord-usb-usb2-0-na-rs485-adapter/80182/produkt).
   * Originally tried with a one dollar device from Aliexpress, but it was not able to send commands. The most probably a
     broken piece, it cost me a lot of evenings :-(
-* [RXTX library](http://fizzed.com/oss/rxtx-for-java)
-  * Linux: install `librxtx-java`
-    * `sudo apt-get install librxtx-java`
-  * Windows: package `Windows-x64` from http://fizzed.com/oss/rxtx-for-java
